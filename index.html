@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>你的爬虫项目会踩中哪条刑法红线？</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .option-card {
+      transition: all 0.2s ease;
+    }
+    .option-card:active {
+      transform: scale(0.98);
+    }
+    .option-card.selected {
+      border-color: #60a5fa;
+      background: rgba(96, 165, 250, 0.15);
+    }
+    .progress-bar {
+      transition: width 0.5s ease;
+    }
+    .risk-bar {
+      transition: width 0.8s ease;
+    }
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="antialiased">
+  <!-- 首页 -->
+  <div id="homePage" class="min-h-screen flex flex-col items-center justify-center px-6 py-8">
+    <div class="w-full max-w-md text-center fade-in">
+      <!-- 图标 -->
+      <div class="">
+        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-400 to-cyan-300 rounded-2xl flex items-center justify-center shadow-lg">
+          <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+      </div>
+      
+      <h1 class="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">
+        爬虫刑法风险测试
+      </h1>
+      <p class="text-lg text-blue-200">🕷️ 你的爬虫项目会踩中哪条刑法红线？</p>
+      <p class="text-sm text-white/60">6道场景题 · 测出你的刑事风险画像</p>
+      
+      <!-- 罪名预览 -->
+      <div class="grid grid-cols-2 gap-2 text-left">
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">侵犯著作权</div>
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">侵犯公民个人信息</div>
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">非法获取数据</div>
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">非法侵入系统</div>
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">破坏系统</div>
+        <div class="bg-white/5 rounded-lg px-3 py-2 text-xs text-white/70">提供侵入工具</div>
+      </div>
+      
+      <button id="startBtn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 rounded-xl shadow-lg active:scale-95 transition-transform">
+        开始测试
+      </button>
+      
+      <div class="mt-6 p-4 bg-white/5 rounded-xl text-left">
+        <p class="text-xs text-white/50">💡 适合人群</p>
+        <p class="text-sm text-white/70">计算机专业学生、爬虫开发者、数据工程师、产品经理，以及任何对网络数据采集法律边界感兴趣的朋友。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 答题页 -->
+  <div id="quizPage" class="hidden min-h-screen flex flex-col">
+    <!-- 顶部进度条 -->
+    <div class="w-full h-1 bg-white/10">
+      <div id="progressBar" class="h-full bg-gradient-to-r from-blue-400 to-cyan-400 progress-bar" style="width: 0%"></div>
+    </div>
+    
+    <div class="flex-1 px-6 py-6">
+      <div class="max-w-md mx-auto">
+        <!-- 题号 -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-white/50">第 <span id="currentNum">1</span> / 6 题</span>
+          <span class="text-xs px-2 py-1 bg-white/10 rounded text-white/60">单选</span>
+        </div>
+        
+        <!-- 题目 -->
+        <div id="questionContainer" class="mb-6 fade-in">
+          <h2 id="questionTitle" class="text-lg font-semibold leading-relaxed"></h2>
+          <div id="optionsContainer" class="space-y-3"></div>
+        </div>
+        
+        <!-- 下一题按钮 -->
+        <button id="nextBtn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 rounded-xl shadow-lg opacity-50 cursor-not-allowed" disabled>
+          下一题
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载页 -->
+  <div id="loadingPage" class="hidden min-h-screen flex flex-col items-center justify-center px-6">
+    <div class="text-center">
+      <div class="w-16 h-16 mx-auto border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+      <p class="text-lg text-white/80">正在分析你的风险画像...</p>
+      <p class="text-sm text-white/50">对比6类刑事罪名构成要件</p>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div id="resultPage" class="hidden min-h-screen flex flex-col">
+    <div class="flex-1 px-6 py-8">
+      <div class="max-w-md mx-auto">
+        <!-- 主结果卡片 -->
+        <div class="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-400/30 rounded-2xl p-6 text-center">
+          <p class="text-sm text-white/60">⚠️ 风险类型</p>
+          <h2 id="resultType" class="text-2xl font-bold text-red-300"></h2>
+          <p id="resultCrime" class="text-base text-white/80"></p>
+        </div>
+        
+        <!-- 结果描述 -->
+        <div class="bg-white/5 rounded-xl p-5">
+          <h3 class="font-semibold mb-3 text-white/90">结果说明</h3>
+          <p id="resultDesc" class="text-sm text-white/70 leading-relaxed"></p>
+        </div>
+        
+        <!-- 刑罚区间 -->
+        <div class="bg-white/5 rounded-xl p-5">
+          <h3 class="font-semibold text-white/90">常见法定刑</h3>
+          <p id="resultPenalty" class="text-sm text-white/70"></p>
+        </div>
+        
+        <!-- 六项风险指数 -->
+        <div class="bg-white/5 rounded-xl p-5">
+          <h3 class="font-semibold mb-4 text-white/90">你的六项风险指数</h3>
+          <div id="riskBars" class="space-y-3"></div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex gap-3">
+          <button id="restartBtn" class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 rounded-xl shadow-lg">
+            重新测试
+          </button>
+          <button id="shareBtn" class="flex-1 bg-white/10 text-white font-semibold py-4 rounded-xl border border-white/20">
+            分享结果
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部固定提示 -->
+    <div class="px-6 py-4 bg-black/30 border-t border-white/10">
+      <p class="text-xs text-white/40 text-center leading-relaxed">
+        本测试为课堂教学互动材料，不构成正式法律意见。现实案件是否构成犯罪、构成何种犯罪、是否达到情节严重，需要结合具体事实和证据综合判断。
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // 题目数据
+    const questions = [
+      {
+        id: 1,
+        title: '全网避坑点评助手：你在开发一个餐厅点评聚合工具，会怎么抓数据？',
+        options: [
+          { key: 'A', text: '只抓餐厅名称、地址、评分和官网链接', score: { copyright: 0 } },
+          { key: 'B', text: '抓短摘要并明确标注来源', score: { copyright: 1 } },
+          { key: 'C', text: '批量抓取用户长评论全文并展示', score: { copyright: 2 } },
+          { key: 'D', text: '抓全文重新排版后做会员付费内容', score: { copyright: 3 } }
+        ]
+      },
+      {
+        id: 2,
+        title: '高端人才画像库：你在做一个招聘数据分析平台，会收集哪些信息？',
+        options: [
+          { key: 'A', text: '只抓行业薪资统计、岗位需求量等匿名数据', score: { personal: 0 } },
+          { key: 'B', text: '抓岗位JD、公司规模等公开招聘信息', score: { personal: 0 } },
+          { key: 'C', text: '抓取简历中的姓名、手机号、邮箱、学历、工作经历', score: { personal: 2 } },
+          { key: 'D', text: '把抓取的个人简历打包卖给猎头公司', score: { personal: 3 } }
+        ]
+      },
+      {
+        id: 3,
+        title: '后台接口数据：你需要获取某网站数据，会怎么做？',
+        options: [
+          { key: 'A', text: '只抓取完全公开的网页内容', score: { data: 0 } },
+          { key: 'B', text: '使用网站公开的API接口', score: { data: 0 } },
+          { key: 'C', text: '绕过前台页面直接抓后台接口数据', score: { data: 2 } },
+          { key: 'D', text: '利用泄露的token/cookie整库下载数据', score: { data: 3 } }
+        ]
+      },
+      {
+        id: 4,
+        title: '进入后台：发现目标网站有管理后台，你会？',
+        options: [
+          { key: 'A', text: '放弃，只抓取公开可见的内容', score: { intrusion: 0 } },
+          { key: 'B', text: '扫描后台登录入口地址', score: { intrusion: 1 } },
+          { key: 'C', text: '尝试弱口令、撞库、爆破登录', score: { intrusion: 2 } },
+          { key: 'D', text: '利用漏洞进入后台管理端', score: { intrusion: 3 } }
+        ]
+      },
+      {
+        id: 5,
+        title: '高频抓取：你的爬虫需要持续运行，你会怎么设置？',
+        options: [
+          { key: 'A', text: '低频抓取，遵守robots协议', score: { destroy: 0 } },
+          { key: 'B', text: '高峰时段抓取但控制请求量', score: { destroy: 1 } },
+          { key: 'C', text: '超高频请求导致网站变慢、报错', score: { destroy: 2 } },
+          { key: 'D', text: '故意构造异常请求让系统瘫痪', score: { destroy: 3 } }
+        ]
+      },
+      {
+        id: 6,
+        title: '卖工具：你开发了一个爬虫工具，会怎么售卖？',
+        options: [
+          { key: 'A', text: '普通网页整理插件，不涉及自动抓取', score: { tools: 0 } },
+          { key: 'B', text: '仅支持公开网页的自动抓取工具', score: { tools: 0 } },
+          { key: 'C', text: '售卖绕过验证码、伪造请求、爆破登录的工具', score: { tools: 2 } },
+          { key: 'D', text: '明知他人用于非法侵入仍提供脚本教程和售后', score: { tools: 3 } }
+        ]
+      }
+    ];
+
+    // 结果数据
+    const results = {
+      copyright: {
+        type: '作品搬运型高危',
+        crime: '侵犯著作权罪',
+        desc: '你的爬虫行为涉及大量复制、传播他人享有著作权的作品，可能构成侵犯著作权罪。典型情形包括：批量抓取用户原创内容、未经授权转载付费文章、盗用他人数据产品等。',
+        penalty: '违法所得数额较大或有其他严重情节的，处三年以下有期徒刑，并处或者单处罚金；数额巨大或有其他特别严重情节的，处三年以上十年以下有期徒刑，并处罚金。'
+      },
+      personal: {
+        type: '隐私猎手型高危',
+        crime: '侵犯公民个人信息罪',
+        desc: '你的爬虫行为涉及非法获取、出售或提供公民个人信息，可能构成侵犯公民个人信息罪。典型情形包括：抓取姓名、电话、地址、身份证号、行踪轨迹等敏感信息。',
+        penalty: '情节严重的，处三年以下有期徒刑或者拘役，并处或者单处罚金；情节特别严重的，处三年以上七年以下有期徒刑，并处罚金。'
+      },
+      data: {
+        type: '后台掏空型高危',
+        crime: '非法获取计算机信息系统数据罪',
+        desc: '你的爬虫行为涉及未经授权获取计算机信息系统中存储、处理或传输的数据，可能构成非法获取计算机信息系统数据罪。典型情形包括：绕过权限验证、利用系统漏洞抓取数据。',
+        penalty: '情节严重的，处三年以下有期徒刑或者拘役，并处或者单处罚金；情节特别严重的，处三年以上七年以下有期徒刑，并处罚金。'
+      },
+      intrusion: {
+        type: '系统闯入型高危',
+        crime: '非法侵入计算机信息系统罪',
+        desc: '你的爬虫行为涉及未经授权进入计算机信息系统，可能构成非法侵入计算机信息系统罪。典型情形包括：破解密码、利用漏洞进入后台、绕过身份验证机制等。',
+        penalty: '处三年以下有期徒刑或者拘役。侵入国家事务、国防建设、尖端科学技术领域的计算机信息系统的，从重处罚。'
+      },
+      destroy: {
+        type: '服务摧毁型高危',
+        crime: '破坏计算机信息系统罪',
+        desc: '你的爬虫行为对计算机信息系统功能或数据造成破坏，可能构成破坏计算机信息系统罪。典型情形包括：高频请求导致系统瘫痪、删除或修改系统数据等。',
+        penalty: '后果严重的，处五年以下有期徒刑或者拘役；后果特别严重的，处五年以上有期徒刑。'
+      },
+      tools: {
+        type: '外挂售卖型高危',
+        crime: '提供侵入、非法控制计算机信息系统程序、工具罪',
+        desc: '你提供专门用于侵入、非法控制计算机信息系统的程序或工具，可能构成提供侵入、非法控制计算机信息系统程序、工具罪。典型情形包括：售卖爬虫框架、提供绕过验证的脚本等。',
+        penalty: '情节严重的，处三年以下有期徒刑或者拘役，并处或者单处罚金；情节特别严重的，处三年以上七年以下有期徒刑，并处罚金。'
+      }
+    };
+
+    // 风险名称映射
+    const riskNames = {
+      copyright: '侵犯著作权',
+      personal: '侵犯个人信息',
+      data: '非法获取数据',
+      intrusion: '非法侵入系统',
+      destroy: '破坏系统',
+      tools: '提供侵入工具'
+    };
+
+    // 状态
+    let currentQuestion = 0;
+    let selectedOption = null;
+    let scores = {
+      copyright: 0,
+      personal: 0,
+      data: 0,
+      intrusion: 0,
+      destroy: 0,
+      tools: 0
+    };
+
+    // DOM元素
+    const homePage = document.getElementById('homePage');
+    const quizPage = document.getElementById('quizPage');
+    const loadingPage = document.getElementById('loadingPage');
+    const resultPage = document.getElementById('resultPage');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const progressBar = document.getElementById('progressBar');
+    const currentNum = document.getElementById('currentNum');
+    const questionTitle = document.getElementById('questionTitle');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    // 开始测试
+    startBtn.addEventListener('click', function() {
+      homePage.classList.add('hidden');
+      quizPage.classList.remove('hidden');
+      renderQuestion();
+    });
+
+    // 渲染题目
+    function renderQuestion() {
+      const q = questions[currentQuestion];
+      selectedOption = null;
+      
+      // 更新进度
+      const progress = ((currentQuestion) / questions.length) * 100;
+      progressBar.style.width = progress + '%';
+      currentNum.textContent = currentQuestion + 1;
+      
+      // 修复：使用原生JavaScript字符串拼接，不是Vue模板语法
+      questionTitle.textContent = 'Q' + (currentQuestion + 1) + '. ' + q.title;
+      
+      // 渲染选项
+      optionsContainer.innerHTML = '';
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-card w-full text-left p-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all';
+        btn.innerHTML = '<span class="inline-block w-8 h-8 rounded-full bg-white/10 text-center leading-8 mr-3 text-sm font-semibold">' + opt.key + '</span><span class="text-sm">' + opt.text + '</span>';
+        btn.onclick = function() { selectOption(index, btn); };
+        optionsContainer.appendChild(btn);
+      });
+      
+      // 重置下一题按钮
+      nextBtn.disabled = true;
+      nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      nextBtn.textContent = currentQuestion === questions.length - 1 ? '查看结果' : '下一题';
+      
+      // 添加淡入动画
+      questionContainer.classList.remove('fade-in');
+      void questionContainer.offsetWidth;
+      questionContainer.classList.add('fade-in');
+    }
+
+    // 选择选项
+    function selectOption(index, btn) {
+      selectedOption = index;
+      
+      // 更新UI
+      const buttons = optionsContainer.querySelectorAll('button');
+      buttons.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      
+      // 启用下一题按钮
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // 下一题
+    nextBtn.addEventListener('click', function() {
+      if (selectedOption === null) return;
+      
+      // 记录分数
+      const q = questions[currentQuestion];
+      const opt = q.options[selectedOption];
+      for (let key in opt.score) {
+        scores[key] += opt.score[key];
+      }
+      
+      currentQuestion++;
+      
+      if (currentQuestion < questions.length) {
+        renderQuestion();
+      } else {
+        showLoading();
+      }
+    });
+
+    // 显示加载页
+    function showLoading() {
+      quizPage.classList.add('hidden');
+      loadingPage.classList.remove('hidden');
+      
+      setTimeout(function() {
+        loadingPage.classList.add('hidden');
+        resultPage.classList.remove('hidden');
+        renderResult();
+      }, 1500);
+    }
+
+    // 渲染结果
+    function renderResult() {
+      // 找出最高分的风险类型
+      let maxScore = -1;
+      let maxType = '';
+      for (let key in scores) {
+        if (scores[key] > maxScore) {
+          maxScore = scores[key];
+          maxType = key;
+        }
+      }
+      
+      // 如果所有分数都是0，默认显示第一个
+      if (maxScore === 0) {
+        maxType = 'copyright';
+      }
+      
+      const result = results[maxType];
+      document.getElementById('resultType').textContent = result.type;
+      document.getElementById('resultCrime').textContent = '——' + result.crime;
+      document.getElementById('resultDesc').textContent = result.desc;
+      document.getElementById('resultPenalty').textContent = result.penalty;
+      
+      // 渲染风险指数条形图
+      const riskBars = document.getElementById('riskBars');
+      riskBars.innerHTML = '';
+      
+      const maxPossibleScore = 3;
+      
+      for (let key in scores) {
+        const score = scores[key];
+        const percentage = (score / maxPossibleScore) * 100;
+        
+        // 修复：使用原生JavaScript条件判断设置颜色
+        let barColor = 'bg-green-400';
+        if (score >= 3) {
+          barColor = 'bg-red-500';
+        } else if (score >= 2) {
+          barColor = 'bg-red-400';
+        } else if (score >= 1) {
+          barColor = 'bg-yellow-400';
+        }
+        
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3';
+        row.innerHTML = 
+          '<span class="text-xs text-white/60 w-20">' + riskNames[key] + '</span>' +
+          '<div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">' +
+            '<div class="risk-bar h-full ' + barColor + '" style="width: ' + percentage + '%"></div>' +
+          '</div>' +
+          '<span class="text-xs text-white/60 w-6 text-right">' + score + '</span>';
+        riskBars.appendChild(row);
+      }
+    }
+
+    // 重新测试
+    restartBtn.addEventListener('click', function() {
+      currentQuestion = 0;
+      selectedOption = null;
+      scores = {
+        copyright: 0,
+        personal: 0,
+        data: 0,
+        intrusion: 0,
+        destroy: 0,
+        tools: 0
+      };
+      resultPage.classList.add('hidden');
+      homePage.classList.remove('hidden');
+    });
+
+    // 分享结果
+    shareBtn.addEventListener('click', function() {
+      alert('截图保存或复制链接分享给朋友吧！');
+    });
+  </script>
+</body>
+</html>
